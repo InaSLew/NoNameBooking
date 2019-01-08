@@ -1,0 +1,172 @@
+{% extends 'index/base.html' %}
+{% block title  %}Book Your Table{% endblock %}
+{% block extrahead %}
+<style>
+    form {
+        margin-top: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <form action="{% url 'index:book_table' %}" method="post">{% csrf_token %}
+        <div class="form-group row">
+            <label for="inputName3" class="col-sm-2 col-form-label">First Name</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="inputName3" name="firstname" placeholder="Your first name" {% if search_query %}value={{ search_query.firstname }}{% endif %} required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputName3" class="col-sm-2 col-form-label">Last Name</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="inputName3" name="lastname" placeholder="Your last name" {% if search_query %}value={{ search_query.lastname }}{% endif %} required>
+            </div>
+        </div>
+        <fieldset class="form-group">
+            <div class="row">
+                <legend class="col-form-label col-sm-2 pt-0">Title</legend>
+                <div class="col-sm-10">
+                    <div class="custom-control custom-radio custom-control-inline">
+                        {% if search_query.title == "Mr" %}
+                        <input type="radio" id="mr" name="title" value="mr" class="custom-control-input" checked required>
+                        {% else %}
+                        <input type="radio" id="mr" name="title" value="mr" class="custom-control-input" required>
+                        {% endif %}
+                        <label class="custom-control-label" for="mr">Mr.</label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        {% if search_query.title == "Mrs" %}
+                        <input type="radio" id="mrs" name="title" value="mrs" class="custom-control-input" checked>
+                        {% else %}
+                        <input type="radio" id="mrs" name="title" value="mrs" class="custom-control-input">
+                        {% endif %}
+                        <label class="custom-control-label" for="mrs">Mrs.</label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        {% if search_query.title == "Miss" %}
+                        <input type="radio" id="miss" name="title" value="miss" class="custom-control-input" checked>
+                        {% else %}
+                        <input type="radio" id="miss" name="title" value="miss" class="custom-control-input">
+                        {% endif %}
+                        <label class="custom-control-label" for="miss">Miss</label>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        <div class="form-group row">
+            <label for="inputPhone3" class="col-sm-2 col-form-label">Phone</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" id="inputPhone3" name="phone_number" placeholder="Phone number" {% if search_query %}value={{ search_query.phone_number }}{% endif %} required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+                <input type="email" class="form-control" id="inputEmail3" name="email" placeholder="Email" {% if search_query %}value={{ search_query.email }}{% endif %} required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputDate3" class="col-sm-2 col-form-label">Date</label>
+            <div class="col-sm-10">
+                <input type="date" class="form-control {% if error_occurence %}is-invalid{% endif %}" id="inputDate3" name="booked_date" aria-describedby="dateHelpBlock" required>
+                <small id="dateHelpBlock" class="form-text text-muted">
+                    A reservation can be up to 4 weeks in advance.
+                </small>
+                <!-- {{ form.booked_date.errors }} -->
+                {% if form.booked_date.errors %}
+                {% for error in form.booked_date.errors %}
+                <strong class="text-danger">Reservation denied: {{ error|escape }}</strong>
+                {% endfor %}
+                {% endif %}
+                
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="exampleFormControlSelect1" class="col-sm-2 col-form-label">Choose a time</label>
+            <div class="col-sm-10">
+                <select class="form-control" name="booked_time" id="exampleFormControlSelect1" {% if search_query %}value={{ search_query.booked_time }}{% endif %}>
+                    {% for time_slot in time_slots %}
+                    {% if search_query.booked_time == time_slot %}
+                    <option selected>{{ time_slot }}</option>
+                    {% else %}
+                    <option>{{ time_slot }}</option>
+                    {% endif %}
+                    {% endfor %}
+                    <!-- <option>11:30</option>
+                        <option>12:00</option>
+                        <option>12:30</option>
+                        <option>13:00</option>
+                        <option>13:30</option>
+                        <option>14:00</option>
+                        <option>14:30</option>
+                        <option>15:00</option>
+                        <option>15:30</option>
+                        <option>16:00</option>
+                        <option>16:30</option>
+                        <option>17:00</option>
+                        <option>17:30</option>
+                        <option>18:00</option>
+                        <option>18:30</option>
+                        <option>19:00</option>
+                        <option>19:30</option>
+                        <option>20:00</option>
+                        <option>20:30</option>
+                        <option>21:00</option> -->
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputGuests3" class="col-sm-2 col-form-label">Guests</label>
+                <div class="col-sm-10">
+                    <input type="number" class="form-control" id="inputGuests3" name="guests_number" placeholder="Number of Guests" min="1" max="12" {% if search_query %}value={{ search_query.guests_number }}{% endif %} required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="exampleFormControlTextarea1">Please inform us here for any food allergies or special requests:</label>
+                <textarea class="form-control" id="exampleFormControlTextarea1" name="customer_notes" rows="3">{% if search_query %}{{ search_query.customer_notes }}{% endif %}</textarea>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12">
+                    <div class="form-check">
+                        <div class="custom-control custom-checkbox">
+                            {% if search_query.is_vegetarian %}
+                            <input type="checkbox" class="custom-control-input" id="customCheck1" name="is_vegetarian" value={{True}} checked>
+                            {% else %}
+                            <input type="checkbox" class="custom-control-input" id="customCheck1" name="is_vegetarian" value={{True}}>
+                            {% endif %}
+                            <label class="custom-control-label" for="customCheck1">Vegetarian</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            {% if search_query.is_vegan %}
+                            <input type="checkbox" class="custom-control-input" id="customCheck2" name="is_vegan" value={{True}} checked>
+                            {% else %}
+                            <input type="checkbox" class="custom-control-input" id="customCheck2" name="is_vegan" value={{True}}>
+                            {% endif %}
+                            <label class="custom-control-label" for="customCheck2">Vegan</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-9">I'd like to receive newsletters from noName.</div>
+                <div class="col-sm-3">
+                    <div class="custom-control custom-checkbox">
+                        {% if search_query.is_subscribed %}
+                        <input type="checkbox" class="custom-control-input" id="customCheck3" name="is_subscribed" value={{True}} checked>
+                        {% else %}
+                        <input type="checkbox" class="custom-control-input" id="customCheck3" name="is_subscribed" value={{True}}>
+                        {% endif %}
+                        <label class="custom-control-label" for="customCheck3"></label>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endblock %}

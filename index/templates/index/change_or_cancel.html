@@ -1,0 +1,55 @@
+{% extends 'index/base.html' %}
+{% block title  %}Book Your Table{% endblock %}
+{% block extrahead %}
+<style>
+    form {
+        margin-top: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <form action="{% url 'index:change_or_cancel' %}" method="post">{% csrf_token %}
+        <div class="form-group row">
+            <label for="inputName3" class="col-sm-2 col-form-label">First Name</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="inputName3" name="firstname" placeholder="Your first name" required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputName3" class="col-sm-2 col-form-label">Last Name</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="inputName3" name="lastname" placeholder="Your last name" required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputPhone3" class="col-sm-2 col-form-label">Phone</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" id="inputPhone3" name="phone_number" placeholder="Phone number" {% if search_query %}value={{ search_query.phone_number }}{% endif %} required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+                <input type="email" class="form-control" id="inputEmail3" name="email" placeholder="Email" {% if search_query %}value={{ search_query.email }}{% endif %} required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="exampleFormControlSelect1" class="col-sm-2 col-form-label">Do you wish to change or cancel?</label>
+            <div class="col-sm-10">
+                <select class="form-control" name="change_or_cancel" id="exampleFormControlSelect1">
+                    <option selected>--Choose--</option>
+                    <option value="update">Change to another time/date</option>
+                    <option value="delete">Cancel my reservation</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endblock %}

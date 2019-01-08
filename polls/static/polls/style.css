@@ -1,0 +1,10 @@
+li a {
+    color: green;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    font-family: 'Roboto', sans-serif;
+    background: white url('image/background.png') no-repeat;
+    background-size: cover;
+}
