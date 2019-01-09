@@ -21,3 +21,8 @@ It's a booking website for a fictional restaurant called NoName
 
 ## Things to be Fixed
 - Everything is very cluttered and the code very unorganized.
+
+## Run the project
+1. `pip install -r requirements.txt`
+2. `python manage.py migrate` (the default sqlite db is used)
+3. `python manage.py runserver`
