@@ -10,46 +10,40 @@
 
 {% block content %}
 <div class="container">
-    <form action="{% url 'index:change_or_cancel' %}" method="post">{% csrf_token %}
-        <div class="form-group row">
-            <label for="inputName3" class="col-sm-2 col-form-label">First Name</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="inputName3" name="firstname" placeholder="Your first name" required>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputName3" class="col-sm-2 col-form-label">Last Name</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="inputName3" name="lastname" placeholder="Your last name" required>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputPhone3" class="col-sm-2 col-form-label">Phone</label>
-            <div class="col-sm-10">
-                <input type="number" class="form-control" id="inputPhone3" name="phone_number" placeholder="Phone number" {% if search_query %}value={{ search_query.phone_number }}{% endif %} required>
-            </div>
-        </div>
+    <div class="lead">
+        Please provide the email you used for booking and the BookingID you received through email.
+    </div>
+    <form action="{% url 'index:change_or_cancel' %}" method="POST">{% csrf_token %}
+        <br>
         <div class="form-group row">
             <label for="inputEmail3" class="col-sm-2 col-form-label">Email</label>
             <div class="col-sm-10">
-                <input type="email" class="form-control" id="inputEmail3" name="email" placeholder="Email" {% if search_query %}value={{ search_query.email }}{% endif %} required>
+                <input type="email" class="form-control {% if invalid_email %}is-invalid{% endif %}" id="inputEmail3" name="email" placeholder="Email" {% if search_query %}value={{ search_query.email }}{% endif %} required>
+                {% if form.email.errors %}
+                {% for error in form.email.errors %}
+                <strong class="text-danger">Request denied: {{ error|escape }}</strong>
+                {% endfor %}
+                {% endif %}
             </div>
         </div>
         <div class="form-group row">
-            <label for="exampleFormControlSelect1" class="col-sm-2 col-form-label">Do you wish to change or cancel?</label>
+            <label for="inputText3" class="col-sm-2 col-form-label">BookingID</label>
             <div class="col-sm-10">
-                <select class="form-control" name="change_or_cancel" id="exampleFormControlSelect1">
-                    <option selected>--Choose--</option>
-                    <option value="update">Change to another time/date</option>
-                    <option value="delete">Cancel my reservation</option>
-                    </select>
-                </div>
+                <input type="text" class="form-control {% if invalid_booking_id %}is-invalid{% endif %}" id="inputText3" name="booking_id" placeholder="booking code" {% if search_query %}value={{ search_query.booking_id }}{% endif %} required>
+                {% if form.booking_id.errors %}
+                {% for error in form.booking_id.errors %}
+                <strong class="text-danger">Request denied: {{ error|escape }}</strong>
+                {% endfor %}
+                {% endif %}
             </div>
-            <div class="form-group row">
-                <div class="col-sm-10">
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-10">
+                <!-- <button type="submit" class="btn btn-outline-secondary">Reschedule</button> -->
+                <button type="submit" class="btn btn-outline-danger">Cancel Reservation</button>
             </div>
-        </form>
-    </div>
-    {% endblock %}
+        </div>
+    </form>
+    <!-- Placeholder for rescheduling form -->
+</div>
+{% endblock %}

@@ -1,25 +1,23 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.urls import reverse
 from django.forms import ValidationError
 from django.contrib import messages
 
-from .models import Booking, BookingForm
+from .models import Booking
+from .forms import BookingForm, DeleteBookingForm
 from polls.models import Question, Choice
 
 def index(request):
-
-        # Just so I can see what's going on through the terminal
-        # for key, value in request.POST.items():
-        #     print(f'{key}:{value}(Data type: {type(value)})')
-
-    
     if request.method == 'GET':
         return render(request, 'index/homepage.html')
 
 def book_table(request):
     contexts = dict()
+    
+    # Need to replace this one with Form.has_error(field_name, code)
     error_occurence = False
+    
     time_slots = ['11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'
         ,'19:00','19:30','20:00','20:30','21:00']
 
@@ -30,11 +28,6 @@ def book_table(request):
     if request.method == 'POST':
         form = BookingForm(request.POST)
 
-        '''
-            1. [DONEish?]Still need to sanitize the data
-            2. Also need to check if the chosen date or time has been booked up or too ahead.
-            3. [DONE]Display a success message modal if booking was successful.
-        '''
         if form.is_valid():
             print('form is valid')
             new_reservation = form.save()
@@ -44,7 +37,6 @@ def book_table(request):
         else:
             error_occurence = True
             print('form is invalid')
-            print(form.errors.as_data())
             
             contexts = {
                 'form': form,
@@ -56,28 +48,44 @@ def book_table(request):
     return render(request, 'index/book_table.html', contexts)
 
 def change_or_cancel(request):
+    error_occurence = False
     if request.method == 'GET':
         return render(request, 'index/change_or_cancel.html')
     
     # To cancel a reservation
-    if request.method == 'DELETE':
-        pass
+    if request.method == 'POST':
+        
+        # get the input from the form and match with the existing reservations
+        form = DeleteBookingForm(request.POST)
 
-    # To reschedule to another date or time:
-    if request.method == 'PATCH':
-        pass
+        if form.is_valid():
+            print('form is valid')
+            customer_who_request = Booking.objects.get(email=form.cleaned_data['email'])
+            print(f'{customer_who_request.booking_id.hex[:5].upper()} requested to cancel reservation.')
+            customer_who_request.delete()
+            print('Reservation deleted.')
+            messages.add_message(request, messages.SUCCESS, 'Reservation successfully cancelled. We look forward to seeing you again soon!')
+            return HttpResponseRedirect(reverse('index:homepage'))
+
+        else:
+            error_occurence = True
+            print('Input given to the delete form is invalid.')
+            contexts = {
+                'form': form,
+                'search_query': form.cleaned_data,
+                'invalid_email': form.has_error('email', code='invalid'),
+                'invalid_booking_id': form.has_error('booking_id', code='invalid'),
+            }
+            return render(request, 'index/change_or_cancel.html', contexts)
 
 def vote(request):
     for key, value in request.POST.items():
-        # print(f'{key}:{value}(Data type: {type(value)})')
         if key != 'csrfmiddlewaretoken':
-            print(key)
             question = get_object_or_404(Question, question_text=key)
-            print(f'Question {key} is created')
             try:
                 selected_choice = question.choice_set.get(choice_text=value)
             except (KeyError, Choice.DoesNotExist):
-                return HttpResponse('Something was wrong')
+                return Http404('Something was wrong')
             else:
                 selected_choice.votes += 1
                 selected_choice.save()

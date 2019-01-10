@@ -15,12 +15,15 @@ It's a booking website for a fictional restaurant called NoName
 - A polling app to collect customers' opinions towards the restaurant
 
 ## To-be-implemented Functionalities
-- User can `PATCH`/reschedule their reservation to another time/date
-- User can `DELETE`/cancel reservation
-- A confirmation email should be sent upon successful booking
+- [x] User can `DELETE`/cancel reservation
+- [ ] A confirmation email should be sent upon successful booking
+- [ ] User can `PATCH`/reschedule their reservation to another time/date
+
 
 ## Things to be Fixed
-- Everything is very cluttered and the code very unorganized.
+- [ ] Everything is very cluttered and the code very unorganized.
+- [ ] Pictures in the carousel get stretched out of proportion.
+- [ ] The beginning of the form is blocked by the navbar in mobile mode.
 
 ## Run the project
 1. `pip install -r requirements.txt`
