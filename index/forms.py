@@ -51,7 +51,51 @@ class DeleteBookingForm(forms.Form):
             self.add_error('email', forms.ValidationError('No reservation made under this email!', code='invalid'))
             return {'email': email, 'booking_id': booking_id}
         
-        if target_reservation.booking_id.hex[:5].upper() != booking_id:
+        if target_reservation.get_booking_id() != booking_id:
             # print(target_reservation.booking_id.hex[:5].upper())
-            self.add_error('booking_id', forms.ValidationError('Invalid booking ID!', code='invalid'))
+            self.add_error('booking_id', forms.ValidationError('Invalid booking ID for the provided email!', code='invalid'))
             return {'email': email, 'booking_id': booking_id}
+
+class RescheduleBookingForm(forms.Form):
+    email = forms.EmailField()
+    booking_id = forms.CharField(max_length=5)
+    booked_date = forms.DateField(initial=datetime.date.today)
+    booked_time = forms.CharField(max_length=5)
+
+    def clean_booked_date(self):
+        # print(self.cleaned_data)
+        new_booked_date = self.cleaned_data['booked_date']
+
+        # Check if the date is not in the past
+        if new_booked_date < datetime.date.today():
+            raise forms.ValidationError('Date in past', code='invalid')
+        
+        # Check if the date is within the upcoming month (4 weeks)
+        if new_booked_date > datetime.date.today() + datetime.timedelta(weeks=4):
+            raise forms.ValidationError('Reservation more than 4 weeks ahead', code='invalid')
+        
+        return new_booked_date
+
+
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        print(f'Generated from the clean() method: {self.cleaned_data}')
+        email = cleaned_data.get('email')
+        booking_id = cleaned_data.get('booking_id')
+        new_booked_date = cleaned_data.get('booked_date')
+        new_booked_time = cleaned_data.get('booked_time')
+
+        try:
+            target_reservation = Booking.objects.get(email=email)
+        except Exception:
+            self.add_error('email', forms.ValidationError('No reservation made under this email!', code='invalid'))
+            return {'email': email, 'booking_id': booking_id, 'booked_date': new_booked_date, 'booked_time': new_booked_time}
+        
+        if target_reservation.get_booking_id() != booking_id:
+            self.add_error('booking_id', forms.ValidationError('Invalid booking ID for the provided email!', code='invalid'))
+            return {'email': email, 'booking_id': booking_id, 'booked_date': new_booked_date, 'booked_time': new_booked_time}
+        
+        if target_reservation.booked_date == new_booked_date and target_reservation.booked_time == new_booked_time:
+            self.add_error('booked_time', forms.ValidationError('You seem to be rescheduling to the same day and time. Please choose at least a different time.', code='invalid'))
+            return {'email': email, 'booking_id': booking_id, 'booked_date': new_booked_date, 'booked_time': new_booked_time}

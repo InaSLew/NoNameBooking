@@ -20,3 +20,6 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.title}.{self.lastname}'s reservation on {self.booked_date} at {self.booked_time}; Contact:{self.phone_number}; reservation made on: {self.timestamp}"
+    
+    def get_booking_id(self):
+        return self.booking_id.hex[:5].upper()

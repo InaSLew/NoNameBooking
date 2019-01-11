@@ -1,12 +1,10 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
-from django.forms import ValidationError
 from django.contrib import messages
-from django.core.mail import send_mail
 
 from .models import Booking
-from .forms import BookingForm, DeleteBookingForm
+from .forms import BookingForm, DeleteBookingForm, RescheduleBookingForm
 from polls.models import Question, Choice
 
 def index(request):
@@ -50,13 +48,40 @@ def book_table(request):
 
 def reschedule_or_cancel(request):
     if request.method == 'GET':
-        return render(request, 'index/reschedule_or_cancel.html')
+        time_slots = ['11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'
+        ,'19:00','19:30','20:00','20:30','21:00']
+        return render(request, 'index/reschedule_or_cancel.html', { 'time_slots': time_slots })
 
 def reschedule_reservation(request):
-    pass
+    if request.method == 'POST':
+        form = RescheduleBookingForm(request.POST)
+
+        if form.is_valid():
+            print('form is valid')
+            print(form.cleaned_data.keys())
+            customer_who_request = Booking.objects.get(email=form.cleaned_data['email'])
+            customer_who_request.booked_date = form.cleaned_data['booked_date']
+            customer_who_request.booked_time = form.cleaned_data['booked_time']
+            customer_who_request.save()
+            messages.add_message(request, messages.SUCCESS, 'Reservation successfully rescheduled.')
+            return HttpResponseRedirect(reverse('index:homepage'))
+        else:
+            print('form data is invalid')
+            time_slots = ['11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'
+        ,'19:00','19:30','20:00','20:30','21:00']
+            contexts = {
+                'reschedule_form': form,
+                'reschedule_form_search_query': form.cleaned_data,
+                'reschedule_form_invalid_email': form.has_error('email', code='invalid'),
+                'reschedule_form_invalid_booking_id': form.has_error('booking_id', code='invalid'),
+                'reschedule_form_invalid_date': form.has_error('booked_date', code='invalid'),
+                'reschedule_form_invalid_time': form.has_error('booked_time', code='invalid'),
+                'time_slots': time_slots,
+            }
+            return render(request, 'index/reschedule_or_cancel.html', contexts)
+
 
 def cancel_reservation(request):
-    error_occurence = False
     
     # To cancel a reservation
     if request.method == 'POST':
@@ -67,15 +92,14 @@ def cancel_reservation(request):
         if form.is_valid():
             print('form is valid')
             customer_who_request = Booking.objects.get(email=form.cleaned_data['email'])
-            print(f'{customer_who_request.booking_id.hex[:5].upper()} requested to cancel reservation.')
+            print(f'{customer_who_request.get_booking_id()} requested to cancel reservation.')
             customer_who_request.delete()
             print('Reservation deleted.')
             messages.add_message(request, messages.SUCCESS, 'Reservation successfully cancelled. We look forward to seeing you again soon!')
             return HttpResponseRedirect(reverse('index:homepage'))
 
         else:
-            error_occurence = True
-            print('Input given to the delete form is invalid.')
+            print('form data is invalid')
             contexts = {
                 'delete_form': form,
                 'delete_form_search_query': form.cleaned_data,
