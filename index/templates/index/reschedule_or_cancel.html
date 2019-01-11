@@ -1,0 +1,84 @@
+{% extends 'index/base.html' %}
+{% block title  %}Reschedule or cancel{% endblock %}
+{% block extrahead %}
+<style>
+    form {
+        margin-top: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    
+    <!-- Rescheduling form -->
+    <div class="lead">
+        Please provide your email and BookingID; and select the time and/or date you wish to reschedule to.
+    </div>
+    <form action="{% url 'index:reschedule_reservation' %}" method="POST">{% csrf_token %}
+        <br>
+        <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+                <input type="email" class="form-control {% if invalid_email %}is-invalid{% endif %}" id="inputEmail3" name="email" placeholder="Email" {% if search_query %}value={{ search_query.email }}{% endif %} required>
+                {% if form.email.errors %}
+                {% for error in form.email.errors %}
+                <strong class="text-danger">Request denied: {{ error|escape }}</strong>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputText3" class="col-sm-2 col-form-label">BookingID</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control {% if invalid_booking_id %}is-invalid{% endif %}" id="inputText3" name="booking_id" placeholder="booking code" {% if search_query %}value={{ search_query.booking_id }}{% endif %} required>
+                {% if form.booking_id.errors %}
+                {% for error in form.booking_id.errors %}
+                <strong class="text-danger">Request denied: {{ error|escape }}</strong>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-10">
+                <button type="submit" class="btn btn-outline-secondary">Reschedule</button>
+            </div>
+        </div>
+    </form>
+    
+    <!-- Deleting form -->
+    <div class="lead">
+        Please provide the email you used for booking and the BookingID you received through email.
+    </div>
+    <form action="{% url 'index:cancel_reservation' %}" method="POST">{% csrf_token %}
+        <br>
+        <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+                <input type="email" class="form-control {% if delete_form_invalid_email %}is-invalid{% endif %}" id="inputEmail3" name="email" placeholder="Email" {% if delete_form_search_query %}value={{ delete_form_search_query.email }}{% endif %} required>
+                {% if delete_form.email.errors %}
+                {% for error in delete_form.email.errors %}
+                <strong class="text-danger">Request denied: {{ error|escape }}</strong>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputText3" class="col-sm-2 col-form-label">BookingID</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control {% if delete_form_invalid_booking_id %}is-invalid{% endif %}" id="inputText3" name="booking_id" placeholder="booking code" {% if delete_form_search_query %}value={{ delete_form_search_query.booking_id }}{% endif %} required>
+                {% if delete_form.booking_id.errors %}
+                {% for error in delete_form.booking_id.errors %}
+                <strong class="text-danger">Request denied: {{ error|escape }}</strong>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-10">
+                <button type="submit" class="btn btn-outline-danger">Cancel Reservation</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.urls import reverse
 from django.forms import ValidationError
 from django.contrib import messages
+from django.core.mail import send_mail
 
 from .models import Booking
 from .forms import BookingForm, DeleteBookingForm
@@ -32,7 +33,7 @@ def book_table(request):
             print('form is valid')
             new_reservation = form.save()
             print('form is saved')
-            messages.add_message(request, messages.SUCCESS, 'Reservation successful! We\'ve sent you a confirmation email.')
+            messages.add_message(request, messages.SUCCESS, f'Reservation successful! Your BookingID is { new_reservation.booking_id.hex[:5].upper() }. BookingID is needed if you later wish to reschedule/cancel your reservation')
             return HttpResponseRedirect(reverse('index:homepage'))
         else:
             error_occurence = True
@@ -47,10 +48,15 @@ def book_table(request):
 
     return render(request, 'index/book_table.html', contexts)
 
-def change_or_cancel(request):
-    error_occurence = False
+def reschedule_or_cancel(request):
     if request.method == 'GET':
-        return render(request, 'index/change_or_cancel.html')
+        return render(request, 'index/reschedule_or_cancel.html')
+
+def reschedule_reservation(request):
+    pass
+
+def cancel_reservation(request):
+    error_occurence = False
     
     # To cancel a reservation
     if request.method == 'POST':
@@ -71,12 +77,12 @@ def change_or_cancel(request):
             error_occurence = True
             print('Input given to the delete form is invalid.')
             contexts = {
-                'form': form,
-                'search_query': form.cleaned_data,
-                'invalid_email': form.has_error('email', code='invalid'),
-                'invalid_booking_id': form.has_error('booking_id', code='invalid'),
+                'delete_form': form,
+                'delete_form_search_query': form.cleaned_data,
+                'delete_form_invalid_email': form.has_error('email', code='invalid'),
+                'delete_form_invalid_booking_id': form.has_error('booking_id', code='invalid'),
             }
-            return render(request, 'index/change_or_cancel.html', contexts)
+            return render(request, 'index/reschedule_or_cancel.html', contexts)
 
 def vote(request):
     for key, value in request.POST.items():
